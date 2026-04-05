@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Myelix.Baseline\Myelix.Baseline.csproj" />
-    <ProjectReference Include="..\Myelix.Sensors\Myelix.Sensors.csproj" />
-    <ProjectReference Include="..\Myelix.Storage\Myelix.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Myelix.Baseline\Myelix.Baseline.csproj" />
+    <ProjectReference Include="..\..\src\Myelix.Sensors\Myelix.Sensors.csproj" />
+    <ProjectReference Include="..\..\src\Myelix.Storage\Myelix.Storage.csproj" />
   </ItemGroup>
 
 </Project>

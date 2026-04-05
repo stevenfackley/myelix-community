@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="Myelix.App/Myelix.App.csproj" />
   <Project Path="Myelix.Baseline/Myelix.Baseline.csproj" />
-  <Project Path="Myelix.Community.Tests/Myelix.Community.Tests.csproj" />
+  <Project Path="../tests/Myelix.Community.Tests/Myelix.Community.Tests.csproj" />
   <Project Path="Myelix.Inference/Myelix.Inference.csproj" />
   <Project Path="Myelix.Plugin.Sample/Myelix.Plugin.Sample.csproj" />
   <Project Path="Myelix.PluginSdk/Myelix.PluginSdk.csproj" />
