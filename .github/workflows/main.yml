@@ -13,11 +13,13 @@ jobs:
       run:
         working-directory: src
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android --skip-sign-check
       - name: Create .env file
         run: |
           echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
