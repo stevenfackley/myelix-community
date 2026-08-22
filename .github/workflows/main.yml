@@ -12,12 +12,29 @@ jobs:
     defaults:
       run:
         working-directory: src
+    env:
+      # The Myelix.Core.* packages live on the GitHub Packages feed for the
+      # stevenfackley account, which requires auth even for read. NuGet.Config
+      # at the repo root reads these two variables; no credential is ever
+      # written to a file. MYELIX_PACKAGES_TOKEN must be a *classic* PAT with
+      # the read:packages scope.
+      NUGET_USER: stevenfackley
+      NUGET_AUTH_TOKEN: ${{ secrets.MYELIX_PACKAGES_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+      - name: Verify GitHub Packages credentials are configured
+        run: |
+          if [ -z "${NUGET_AUTH_TOKEN}" ]; then
+            echo "::error::MYELIX_PACKAGES_TOKEN is not set — the owner must create a classic personal access token with read:packages and store it as that repository secret; fine-grained tokens cannot read GitHub Packages"
+            exit 1
+          fi
+          echo "MYELIX_PACKAGES_TOKEN is present."
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android --skip-sign-check
       - name: Create .env file
         run: |
           echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
