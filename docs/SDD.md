@@ -66,7 +66,7 @@ Myelix Community is the open-source, on-device half of the Myelix system. Its re
 
 ## deployment assumptions
 
-- The app runs on Android 12+, iOS 16+, and Windows 11 with .NET 10 MAUI.
+- The app is a .NET 10 MAUI app targeting Android, iOS, Mac Catalyst, and Windows. The minimums set in `Myelix.App.csproj` are Android API 21+, iOS 15+, Mac Catalyst 15+, and Windows 10 1809 (10.0.17763)+.
 - Background execution is constrained by OS policy on all three platforms. The sensor collection layer is designed to operate within background execution windows without assuming persistent background processes.
 - SQLite database files are stored in the app's private data directory, which is inaccessible to other apps without root/jailbreak on Android and iOS.
 - ONNX models are bundled with the app at release and updated via the model registry pull mechanism. The app does not require network access to run inference.
@@ -125,7 +125,7 @@ The TCN (Temporal Convolutional Network) architecture is chosen for its efficien
 
 ### Myelix.Storage
 
-Encrypted persistence layer. Built on EF Core 9 with the SQLite provider and SQLCipher for at-rest encryption. The `MyelixDbContext` defines entity models for: raw sample ring buffers (short-lived), extracted feature vectors, baseline snapshots, resilience score history, sync audit log, and consent records.
+Encrypted persistence layer. Built on EF Core 10 with the SQLite provider and SQLCipher for at-rest encryption. The `MyelixDbContext` defines entity models for: raw sample ring buffers (short-lived), extracted feature vectors, baseline snapshots, resilience score history, sync audit log, and consent records.
 
 `RetentionPolicy` runs on a scheduled background task. It enforces configurable retention windows per data class: raw samples are deleted after feature extraction (configurable, default 72 hours); feature vectors are retained for 90 days; score history is retained indefinitely (user-deletable); sync log entries are retained for 30 days.
 
@@ -190,11 +190,13 @@ Platform-specific service registrations (e.g., the Android vs. iOS vs. Windows i
 
 - Unit tests cover: `FeatureExtractor`, `DriftCalculator`, `ScoreComputer`, `AggregateBuilder`, `ConsentFilter`, `RetentionPolicy`. All use in-memory implementations of storage interfaces.
 - Integration tests cover: full collection-to-score pipeline with a synthetic sensor source and an in-memory SQLite database.
-- Platform tests (GitHub Actions matrix): build and basic smoke tests on Android emulator, iOS simulator, and Windows runner.
-- Plugin SDK contract tests: a test suite in `Myelix.Plugin.Sample.Tests` validates that the sample plugin cannot access raw data through the injected `IPluginContext`.
+- Current coverage: the only test project is `tests/Myelix.Community.Tests` (xUnit), run by `main.yml` on ubuntu-latest.
+- Planned, not yet implemented: platform tests (a GitHub Actions matrix with build and smoke tests on Android emulator, iOS simulator, and Windows runner).
+- Planned, not yet implemented: Plugin SDK contract tests (a `Myelix.Plugin.Sample.Tests` suite validating that the sample plugin cannot access raw data through the injected `IPluginContext`).
 
 ## ci pipeline
 
 GitHub Actions workflows:
-- `build.yml`: restore, build, and unit test on every pull request. Runs on ubuntu-latest for the .NET projects; Android and Windows build steps run on their respective hosted runners.
-- `release.yml`: triggered on version tags. Builds release artifacts for Android (AAB), iOS (IPA), and Windows (MSIX). Signs artifacts using secrets stored in the repository's encrypted secret store.
+- `main.yml` (Myelix Community CI): on push and pull request to main, restores, builds, and tests `src/` in a single ubuntu-latest job with the `maui-android` workload installed. There are no iOS or Windows lanes.
+- `dependabot-auto-merge.yml`: auto-approves and enables auto-merge on patch-only Dependabot pull requests.
+- No release workflow exists yet: no tag-triggered builds and no signed AAB/IPA/MSIX artifacts.

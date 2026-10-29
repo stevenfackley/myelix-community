@@ -129,7 +129,7 @@ The `Myelix.Sync` pipeline enforces this policy in code. Automated CI validation
 
 ## Plugin SDK
 
-Researchers and developers can extend Myelix by implementing `IPlugin` from `Myelix.PluginSdk`. Plugins run in an isolated context and cannot access raw sensor streams.
+Researchers and developers can extend Myelix by deriving from `PluginBase` (which implements `IPluginModule`) in `Myelix.PluginSdk`. Plugins run in an isolated context and cannot access raw sensor streams.
 
 See [docs/PluginDevelopment.md](./docs/PluginDevelopment.md) for the full authoring guide.
 
