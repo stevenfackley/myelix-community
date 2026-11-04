@@ -31,6 +31,37 @@ myelix-community is the public half of the Myelix system. It contains the .NET M
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Android/iOS SDK for mobile targets (optional for library-only development)
 
+### Restoring packages
+
+`Myelix.Core.Contracts` and `Myelix.Core.Runtime` are built from the private
+`myelix-core` repo and published to the GitHub Packages NuGet feed for the
+`stevenfackley` account. That feed requires authentication even to read, so a
+first-time `dotnet restore` here fails with `NU1101` until you add credentials.
+
+1. Create a **classic** personal access token with the `read:packages` scope at
+   <https://github.com/settings/tokens>. Fine-grained tokens cannot read GitHub
+   Packages.
+2. Register the source once, globally:
+
+   ```bash
+   dotnet nuget add source https://nuget.pkg.github.com/stevenfackley/index.json \
+     --name github-myelix \
+     --username stevenfackley \
+     --password <your token> \
+     --store-password-in-clear-text
+   ```
+
+   Alternatively, leave the source alone and export the two variables the
+   checked-in `NuGet.Config` reads, which keeps the token out of your NuGet
+   config file entirely:
+
+   ```bash
+   export NUGET_USER=stevenfackley
+   export NUGET_AUTH_TOKEN=<your token>
+   ```
+
+CI does the same thing with the `MYELIX_PACKAGES_TOKEN` repository secret.
+
 ### Build & Test
 
 ```bash
@@ -98,7 +129,7 @@ The `Myelix.Sync` pipeline enforces this policy in code. Automated CI validation
 
 ## Plugin SDK
 
-Researchers and developers can extend Myelix by implementing `IPlugin` from `Myelix.PluginSdk`. Plugins run in an isolated context and cannot access raw sensor streams.
+Researchers and developers can extend Myelix by deriving from `PluginBase` (which implements `IPluginModule`) in `Myelix.PluginSdk`. Plugins run in an isolated context and cannot access raw sensor streams.
 
 See [docs/PluginDevelopment.md](./docs/PluginDevelopment.md) for the full authoring guide.
 

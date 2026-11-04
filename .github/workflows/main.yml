@@ -9,15 +9,43 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     defaults:
       run:
         working-directory: src
+    env:
+      # The Myelix.Core.* packages live on the GitHub Packages feed for the
+      # stevenfackley account, which requires auth even for read. NuGet.Config
+      # at the repo root reads these two variables; no credential is ever
+      # written to a file.
+      #
+      # Two ways to satisfy this, in order of preference:
+      #   1. No secret at all: the packages' settings (Package settings ->
+      #      Manage Actions access) grant this repository Read, and the job's
+      #      own GITHUB_TOKEN (packages: read below) is accepted by the feed.
+      #   2. MYELIX_PACKAGES_TOKEN, a *classic* PAT with read:packages, when
+      #      set, takes precedence (fine-grained PATs cannot read Packages).
+      NUGET_USER: stevenfackley
+      NUGET_AUTH_TOKEN: ${{ secrets.MYELIX_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+      - name: Report which GitHub Packages credential is in use
+        env:
+          HAS_PAT: ${{ secrets.MYELIX_PACKAGES_TOKEN != '' }}
+        run: |
+          if [ "${HAS_PAT}" = "true" ]; then
+            echo "Using MYELIX_PACKAGES_TOKEN (classic PAT) for the GitHub Packages feed."
+          else
+            echo "Using the job's GITHUB_TOKEN for the GitHub Packages feed. If restore fails with 401/403, grant this repository Read under each Myelix.Core.* package's Manage Actions access, or set MYELIX_PACKAGES_TOKEN."
+          fi
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android --skip-sign-check
       - name: Create .env file
         run: |
           echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
